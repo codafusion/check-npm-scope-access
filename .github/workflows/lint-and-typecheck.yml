@@ -1,0 +1,36 @@
+name: Quality
+
+on:
+    pull_request:
+    push:
+        branches:
+            - main
+
+jobs:
+    lint-and-typecheck:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+
+            -   name: Setup Python
+                uses: actions/setup-python@v6
+                with:
+                    python-version: "3.10"
+
+            -   name: Install tooling
+                run: |
+                    python -m pip install --upgrade pip
+                    python -m pip install -e ".[dev]"
+
+            -   name: Run ruff
+                run: ruff check .
+
+            -   name: Run mypy
+                run: mypy scripts/check_package_access.py
+
+            -   name: Run py_compile
+                run: python -m py_compile scripts/check_package_access.py
+
+            -   name: Run tests
+                run: pytest -q

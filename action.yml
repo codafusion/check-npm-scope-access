@@ -1,0 +1,33 @@
+name: Check NPM Scope Access
+description: Fails when the token cannot read private NPM packages for one or more scopes.
+author: codafusion
+
+inputs:
+    scopes:
+        description: Comma, space, or newline separated package scopes (for example @codafusion @acme).
+        required: true
+    token:
+        description: Token used for package registry requests. Defaults to github.token when empty.
+        required: false
+        default: ""
+    registry-url:
+        description: Base package registry URL.
+        required: false
+        default: "https://npm.pkg.github.com"
+
+runs:
+    using: composite
+    steps:
+        -   name: Verify package read access
+            shell: bash
+            env:
+                TOKEN: ${{ inputs.token != '' && inputs.token || github.token }}
+                SCOPES: ${{ inputs.scopes }}
+                REGISTRY_URL: ${{ inputs.registry-url }}
+            run: |
+                set -euo pipefail
+                python3 "${{ github.action_path }}/scripts/check_package_access.py"
+
+branding:
+    icon: lock
+    color: blue
